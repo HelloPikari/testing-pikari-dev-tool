@@ -2,7 +2,7 @@
 /**
  * Plugin Name: test-tooling
  * Description: This is a test
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author:      Steve Ariss
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Plugin version.
  */
-define( 'TEST_TOOLING_VERSION', '1.0.0' );
+define( 'TEST_TOOLING_VERSION', '1.0.2' );
 
 /**
  * Plugin directory path.

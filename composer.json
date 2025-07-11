@@ -1,7 +1,7 @@
 {
 	"name": "steve-ariss/test-tooling",
 	"description": "This is a test",
-	"version": "1.0.0",
+	"version": "1.0.2",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"authors": [
