@@ -2,7 +2,7 @@
 /**
  * Plugin Name: test-tooling
  * Description: This is a test
- * Version:     1.0.0
+ * Version: 1.0.1
  * Author:      Steve Ariss
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
