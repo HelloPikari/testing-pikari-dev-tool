@@ -6,7 +6,7 @@
  * Author:      Steve Ariss
  * License:     GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: test-tooling
+ * Text Domain: test-tooling-pikari
  * Domain Path: /languages
  *
  * @package test-tooling
