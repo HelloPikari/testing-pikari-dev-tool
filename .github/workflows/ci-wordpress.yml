@@ -1,221 +1,221 @@
 name: CI
 
 on:
-  push:
-    branches: [ main, develop ]
-    tags:
-      - 'v*'
-  pull_request:
-    branches: [ main ]
+    push:
+        branches: [main, develop]
+        tags:
+            - 'v*'
+    pull_request:
+        branches: [main]
 
 permissions:
-  contents: write
-  packages: read
+    contents: write
+    packages: read
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
+    lint:
+        runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-    - name: Run JavaScript linting
-      run: npm run lint:js
+            - name: Run JavaScript linting
+              run: npm run lint:js
 
-    - name: Run CSS linting
-      run: npm run lint:css
+            - name: Run CSS linting
+              run: npm run lint:css
 
-  php-lint:
-    runs-on: ubuntu-latest
+    php-lint:
+        runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        php-version: ['8.2', '8.3', '8.4']
+        strategy:
+            matrix:
+                php-version: ['8.2', '8.3', '8.4']
 
-    steps:
-    - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php-version }}
-        tools: composer:v2
-        coverage: none
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: ${{ matrix.php-version }}
+                  tools: composer:v2
+                  coverage: none
 
-    - name: Install Composer dependencies
-      run: composer install --prefer-dist --no-progress
+            - name: Install Composer dependencies
+              run: composer install --prefer-dist --no-progress
 
-    - name: Run PHP linting
-      run: composer lint
+            - name: Run PHP linting
+              run: composer lint
 
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-    - name: Build plugin
-      run: npm run build
+            - name: Build plugin
+              run: npm run build
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-files
-        path: build/
+            - name: Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: build-files
+                  path: build/
 
-  test-js:
-    runs-on: ubuntu-latest
-    continue-on-error: true
+    test-js:
+        runs-on: ubuntu-latest
+        continue-on-error: true
 
-    steps:
-    - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-    - name: Check if tests exist
-      id: check_tests
-      run: |
-        if [ -d "tests" ] || [ -d "test" ] || [ -d "__tests__" ]; then
-          echo "has_tests=true" >> $GITHUB_OUTPUT
-        else
-          echo "has_tests=false" >> $GITHUB_OUTPUT
-          echo "No test directory found, skipping tests"
-        fi
+            - name: Check if tests exist
+              id: check_tests
+              run: |
+                  if [ -d "tests" ] || [ -d "test" ] || [ -d "__tests__" ]; then
+                    echo "has_tests=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "has_tests=false" >> $GITHUB_OUTPUT
+                    echo "No test directory found, skipping tests"
+                  fi
 
-    - name: Run JavaScript tests
-      if: steps.check_tests.outputs.has_tests == 'true'
-      run: |
-        # Check which test command is available
-        if npm run | grep -q "test:unit"; then
-          npm run test:unit -- --coverage
-        elif npm run | grep -q "test "; then
-          npm test -- --coverage
-        else
-          echo "No test script found in package.json"
-          exit 0
-        fi
+            - name: Run JavaScript tests
+              if: steps.check_tests.outputs.has_tests == 'true'
+              run: |
+                  # Check which test command is available
+                  if npm run | grep -q "test:unit"; then
+                    npm run test:unit -- --coverage
+                  elif npm run | grep -q "test "; then
+                    npm test -- --coverage
+                  else
+                    echo "No test script found in package.json"
+                    exit 0
+                  fi
 
-    - name: Upload coverage reports
-      if: steps.check_tests.outputs.has_tests == 'true'
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-js
-        path: tests/coverage/
+            - name: Upload coverage reports
+              if: steps.check_tests.outputs.has_tests == 'true'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-js
+                  path: tests/coverage/
 
-  create-zip:
-    needs: [lint, php-lint, build, test-js]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    create-zip:
+        needs: [lint, php-lint, build, test-js]
+        runs-on: ubuntu-latest
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
-    steps:
-    - uses: actions/checkout@v4
+        steps:
+            - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-    - name: Build plugin
-      run: npm run build
+            - name: Build plugin
+              run: npm run build
 
-    - name: Create plugin ZIP
-      run: npm run plugin-zip
+            - name: Create plugin ZIP
+              run: npm run plugin-zip
 
-    - name: Upload plugin ZIP
-      uses: actions/upload-artifact@v4
-      with:
-        name: [PLUGIN_SLUG]
-        path: [PLUGIN_SLUG].zip
+            - name: Upload plugin ZIP
+              uses: actions/upload-artifact@v4
+              with:
+                  name: test-tooling
+                  path: test-tooling.zip
 
-  release:
-    needs: [lint, php-lint, build, test-js]
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    release:
+        needs: [lint, php-lint, build, test-js]
+        runs-on: ubuntu-latest
+        if: startsWith(github.ref, 'refs/tags/v')
 
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        # When checking out a tag that's on the build branch,
-        # we get the complete built code including the build/ folder
-        ref: ${{ github.ref }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  # When checking out a tag that's on the build branch,
+                  # we get the complete built code including the build/ folder
+                  ref: ${{ github.ref }}
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'npm'
 
-    - name: Verify build folder exists
-      run: |
-        if [ ! -d "build" ]; then
-          echo "ERROR: build/ folder not found. Tag may not be from build branch."
-          exit 1
-        fi
-        echo "✓ build/ folder exists"
-        ls -la build/
+            - name: Verify build folder exists
+              run: |
+                  if [ ! -d "build" ]; then
+                    echo "ERROR: build/ folder not found. Tag may not be from build branch."
+                    exit 1
+                  fi
+                  echo "✓ build/ folder exists"
+                  ls -la build/
 
-    - name: Install dependencies
-      run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-    - name: Build plugin (if needed)
-      run: |
-        # Only rebuild if build folder is somehow missing files
-        if [ ! -f "build/[MAIN_JS_FILE]" ]; then
-          echo "Build files missing, rebuilding..."
-          npm run build
-        else
-          echo "Build files already exist, skipping build step"
-        fi
+            - name: Build plugin (if needed)
+              run: |
+                  # Only rebuild if build folder is somehow missing files
+                  if [ ! -f "build/[MAIN_JS_FILE]" ]; then
+                    echo "Build files missing, rebuilding..."
+                    npm run build
+                  else
+                    echo "Build files already exist, skipping build step"
+                  fi
 
-    - name: Create plugin ZIP
-      run: npm run plugin-zip
+            - name: Create plugin ZIP
+              run: npm run plugin-zip
 
-    - name: Extract version from tag
-      id: get_version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+            - name: Extract version from tag
+              id: get_version
+              run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-    - name: Extract release notes
-      id: extract_notes
-      run: |
-        VERSION="${{ steps.get_version.outputs.VERSION }}"
-        # Extract the section for this version from CHANGELOG.md
-        sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' > release_notes.md
-        echo "Release notes extracted for version $VERSION"
+            - name: Extract release notes
+              id: extract_notes
+              run: |
+                  VERSION="${{ steps.get_version.outputs.VERSION }}"
+                  # Extract the section for this version from CHANGELOG.md
+                  sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$d' > release_notes.md
+                  echo "Release notes extracted for version $VERSION"
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: [PLUGIN_SLUG].zip
-        body_path: release_notes.md
-        prerelease: ${{ contains(steps.get_version.outputs.VERSION, 'alpha') || contains(steps.get_version.outputs.VERSION, 'beta') }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - name: Create Release
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: test-tooling.zip
+                  body_path: release_notes.md
+                  prerelease: ${{ contains(steps.get_version.outputs.VERSION, 'alpha') || contains(steps.get_version.outputs.VERSION, 'beta') }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
